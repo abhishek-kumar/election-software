@@ -1,0 +1,1 @@
+DROP DATABASE `bits_election` 

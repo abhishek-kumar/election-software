@@ -1,0 +1,117 @@
+<?php
+	$conn = db_connect();
+	
+	//get logged in count
+	$result = mysql_query("select count(*) from bits_users where login_status=1;");
+	if(!$result)
+		throw new Exception("Could not get count of users logged in.");
+	$row = mysql_fetch_array($result);
+	$logincount = $row[0];
+	
+	//get voted count
+	$result = mysql_query("select count(*) from bits_users where vote_status=1;");
+	if(!$result)
+		throw new Exception("Could not get count of users voted.");
+	$row = mysql_fetch_array($result);
+	$votedcount = $row[0];
+	
+?>
+<script language="javascript">
+	var mTimer, nTimer;
+	mTimer = setTimeout("dobackup();", 5000);
+	//nTimer = setTimeout("dorefresh();", 5000);
+	
+	function dobackup()
+	{
+		document.form_backup.submit();
+	}
+	
+	function dorefresh()
+	{
+		var sURL = unescape(window.location.pathname + "?menuitem=Election%20Status");
+		window.location.href = sURL;
+	}
+</script>
+<table width="97%"  border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="50">&nbsp;</td>
+    <td width="200"><div align="left"></div></td>
+    <td><div align="left"></div></td>
+  </tr>
+  <tr>
+    <td width="50">&nbsp;</td>
+    <td width="200"><div align="left">Total Users who logged in: </div></td>
+    <td><div align="left"><?php echo $logincount; ?></div></td>
+  </tr>
+  <tr>
+    <td width="50">&nbsp;</td>
+    <td width="200"><div align="left">Total Users who casted vote: </div></td>
+    <td><div align="left"><?php echo $votedcount; ?></div></td>
+  </tr>
+  <tr>
+    <td width="50">&nbsp;</td>
+    <td width="200"><div align="left">Users Online(now): </div></td>
+    <td>	  <?php
+	//get online users
+	$result = mysql_query("select username from bits_users where login_status=1 and vote_status=0;");
+	if(!$result)
+		throw new Exception("Could not get users online now");
+
+	?>
+	  <div align="center">
+	    <table width="70%"  border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td><div align="center">Total Count: <?php echo ($logincount - $votedcount);?></div></td>
+          </tr>
+		  <?php
+		  
+		  	while($row = mysql_fetch_array($result))
+			{
+				
+				extract($row);
+				echo '<tr>';
+            	echo '<td><div align="center">'.$username.'</div></td>';
+          		echo '</tr>';
+			}
+		  
+		  ?>
+          
+          <tr>
+            <td><div align="center">
+			<?php 
+			if(isset($_REQUEST['errorcount']))
+				if($_REQUEST['errorcount']>0)
+					echo $_REQUEST['errorcount'] + " Errors while performing backup.<br>";
+			?></div></td>
+          </tr>
+          
+        </table>
+	  </div></td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td><form action="<?php echo $BACKUP_SERVER; ?>" method="post" name="form_backup" id="form_backup">
+	<?php
+	//put ip address
+	echo '<input name="localserverip" type="hidden" id="localserverip" value="'.$_SERVER['REMOTE_ADDR'].'">';
+	
+	//Get list of all candidates
+	$result = mysql_query("select * from bits_candidates;");
+	if(!$result)
+		throw new Exception("Could not extract candidates data");
+
+	$candcount=0;
+	while($row_candidates = mysql_fetch_array($result))
+	{
+		$candcount++;
+		extract($row_candidates);
+		echo '<input name="candidate_id'.$candcount.'" type="hidden" id="candidate_id'.$candcount.'" value="'.$candidate_id.'">';
+		echo '<input name="vote_count'.$candcount.'" type="hidden" id="vote_count'.$candcount.'" value="'.$vote_count.'">';
+	}
+	echo '<input name="candcount" type="hidden" id="candcount" value="'.$candcount.'">';
+	?>
+      
+    </form></td>
+  </tr>
+</table>

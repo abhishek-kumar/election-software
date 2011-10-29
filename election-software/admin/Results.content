@@ -1,0 +1,94 @@
+<div align="left">
+  <table width="97%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td width="48">&nbsp;</td>
+      <td width="898">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2"><div align="left">
+	  <span style="font-size: 12px;color: #000000;font-weight: bold;font-family: Arial, Helvetica, sans-serif;">Results</span><br>
+      Exercise extreme caution while viewing results. This page should only be opened after the election process is over. </div></td>
+    </tr>
+    <tr>
+      <td width="48">&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+<?php
+	$conn = db_connect();
+	
+	if(!isset($_REQUEST['es_id']))
+	{
+		//SHOW ELECTIONSETS
+		$sql = "select * from bits_electionsets order by name;";
+		$result = mysql_query($sql);
+		if(!$result)
+			throw new Exception("Cannot read bits_electionsets!");
+		
+		while($row = mysql_fetch_array($result)){
+			extract($row);
+			echo '<tr><td width="48">&nbsp;</td><td><div align="left"><a href="Index.php?menuitem=Results&es_id='.$es_id.'">'.$name.'</div></td></tr>';
+			//done!
+		}
+	}
+	else
+	{
+		//show the electionset
+		$sql = "select * from bits_electionsets where es_id=".$_REQUEST['es_id'].';';
+		$result = mysql_query($sql);
+		if(!$result)
+			throw new Exception("Cannot read bits_electionsets for es_id=".$_REQUEST['es_id']);
+		
+		while($row = mysql_fetch_array($result)){
+			extract($row);
+			echo '<tr><td colspan="2"><div align="left"><span style="font-size: 12px;color: #000000;font-weight: bold;font-family: Arial, Helvetica, sans-serif;">'.$name.'</span><br>'.$description.'</div><br></td></tr>';
+		}
+		
+		//Show the Posts now
+		$sql = "select * from bits_posts where es_id=".$_REQUEST['es_id'].';';
+		$result = mysql_query($sql);
+		if(!$result)
+			throw new Exception("Cannot read bits_posts for es_id=".$_REQUEST['es_id']);
+		
+		while($row = mysql_fetch_array($result)){
+			extract($row);
+			echo '<tr><td width="48">&nbsp;</td><td><div align="left">'.$name.'</div><div align="right"><table width="97%" border="0" cellspacing="0" cellpadding="0">';
+			//get the candidates now
+			
+			$sql = "select * from bits_candidates where post_id=".$post_id.';';
+			$resultc = mysql_query($sql);
+			if(!$resultc)
+				throw new Exception("Cannot read bits_candidates for post_id=".$post_id);
+			while($rowc = mysql_fetch_array($resultc)){
+			//show the candidate's name and vote count
+				extract($rowc);
+				
+				//extract vote count from backup server
+				$sql = "select sum(vote_count) from bits_centralbackup_candidates where candidate_id='".$candidate_id."';";
+				$resultv = mysql_query($sql);
+				if(!$resultv)
+					echo '<tr><td width="70%"><div align="left">'.$name.'</div></td><td width="30%"><div align="left">Local: '.$vote_count.'</div></td></tr>';
+				else
+				{
+					$rowtcount = mysql_fetch_array($resultv);
+					echo '<tr><td width="70%"><div align="left">'.$name.'</div></td><td width="30%"><div align="left">Total: '.$rowtcount[0].'&nbsp;&nbsp;&nbsp;Local: '.$vote_count.'</div></td></tr>';
+				}
+								
+			}
+			echo '</table></div><br>';
+		}
+		echo '<a href="Index.php?menuitem=Results">&lt;&lt; Results Main Page</a>';
+	}
+	
+?>
+    <tr>
+      <td width="48">&nbsp;</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td><div align="right">
+        
+      </div></td>
+    </tr>
+  </table>
+</div>

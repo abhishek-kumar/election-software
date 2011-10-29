@@ -1,0 +1,56 @@
+<?php
+$filepath = "";
+if(isset($_POST['filepath']))
+{
+	$filepath = $_POST['filepath'];
+	$conn = db_connect();
+	$fcontents = file ($filepath); 
+
+
+	  for($i=0; $i<sizeof($fcontents); $i++) 
+	  { 
+		  $line = trim($fcontents[$i]); 
+		  $arr = explode(",", $line); 
+		  #if your data is tab separated
+		  # instead of comma separated, 
+		  # change the ',' above to '\t' 
+		 
+		  //third element is password. Need to encrypt it
+		  $arr[2] = md5($arr[2]);
+		  
+		  $sql = "insert into bits_users values ('". 
+					  implode("','", $arr) ."')"; 
+		  mysql_query($sql);
+		  
+		  if(mysql_error()) {
+			 echo mysql_error() ."<br>\n";
+		  } 
+		  else
+		  	echo "&nbsp;".$sql."<br>\n";
+		}
+}
+?>
+<script language="javascript">
+
+document.write("");
+</script>
+<table width="97%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><div align="left">
+      <form id="form1" name="form1" method="post" action="Index.php?menuitem=Users">
+        <label>Relative Path of Excel file:
+        <input name="filepath" type="text" id="filepath" size="50" maxlength="50" />
+        </label>
+            <label>
+            <input type="submit" name="Submit" value="Import Users" />
+            </label>
+      </form>
+      </div></td>
+  </tr>
+  <tr>
+    <td><div align="left"></div></td>
+  </tr>
+</table>
